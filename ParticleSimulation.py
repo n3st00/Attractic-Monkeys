@@ -31,6 +31,8 @@ nucleus_scatter = ax.scatter(nuclei[:, 0], nuclei[:, 1], s=100, color='red', lab
 electron_scatter = ax.scatter([], [], s=30, color='blue', label='Electrons')
 circle = plt.Circle(center, boundary_radius, color='gray', alpha=0.1)
 ax.add_patch(circle)
+dipole_arrow = ax.arrow(center[0], center[1], 0, 0, color='purple', width=0.05, head_width=0.3, label='Dipole')
+text = ax.text(0.5, 9.5, '', fontsize=10)
 ax.set_title("Electron Fluctuations Around Ethane-Like Molecule")
 ax.legend()
 
@@ -39,7 +41,7 @@ ax.legend()
 # animation initialization - setst the background
 def init():
 	electron_scatter.set_offsets(electron_positions)
-	return electron_scatter,
+	return electron_scatter, dipole_arrow, text
 	
 # animation update function
 def update(frame):
@@ -57,7 +59,23 @@ def update(frame):
 	electron_positions[:] = new_positions
 	electron_scatter.set_offsets(electron_positions)
 	
-	return electron_scatter,
+	dipole_vector = -np.sum(electron_positions - center, axis = 0)
+	
+	# Remove the old arrow (by removing from the axes)
+	dipole_arrow.remove()
+
+	# Create and store a new arrow
+	arrow_scale = 0.1  # smaller scale for visualization
+	new_arrow = ax.arrow(center[0], center[1],
+							dipole_vector[0] * arrow_scale,
+							dipole_vector[1] * arrow_scale,
+							color='purple', width=0.05, head_width=0.3)
+
+	# Update the global reference to the dipole arrow
+	globals()['dipole_arrow'] = new_arrow
+	text.set_text(f'Dipole magnitude: {np.linalg.norm(dipole_vector):.2f}')
+
+	return electron_scatter, dipole_arrow, text
 	
 # animation func
 ani = FuncAnimation(fig, update, frames=100, init_func=init, blit=True, interval=500, repeat_delay=100, repeat=True)
