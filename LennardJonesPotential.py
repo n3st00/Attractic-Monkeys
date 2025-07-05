@@ -32,7 +32,7 @@ def compute_energies():
     if r == 0:
         potential = 0
     else:
-        potential = 4 * epsilon * ((sigma / r)**12 - (sigma / r)**6
+        potential = 4 * epsilon * ((sigma / r)**12 - (sigma / r)**6)
     return potential
 
 
