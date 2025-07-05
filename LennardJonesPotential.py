@@ -9,8 +9,8 @@ sigma = 1.0
 dt = 0.01
 mass = 1.0
 #-----/PARAMETERS-------------------------------------------------
-particle_positions = np.array([[4.5, 5], [6, 5]], dtype=float)
-particle_velocities = np.array([[0.05, 0.0], [-0.05, 0.0]]) # set up the initial velocities
+particle_positions = np.array([[4.5, 5], [6.5, 5]], dtype=float)
+particle_velocities = np.array([[0.05, 0.0], [-0.1, 0.05]]) # set up the initial velocities
 # Iiitial acceleration
 r_vec = particle_positions[1] - particle_positions[0]
 
@@ -28,34 +28,34 @@ def lennard_jones_force(r_vec):
 	
 initial_force = lennard_jones_force(r_vec)	
 accelerations = np.array([-initial_force / mass, initial_force / mass])
-steps_per_frame = 7  # calculating multiple steps at once
+steps_per_frame = 14  # calculating multiple steps at once
 def update(frame):
     global particle_positions, particle_velocities, accelerations
 
     for _ in range(steps_per_frame):
-        # Step 1: Update positions
+        # updating positions
         particle_positions += particle_velocities * dt + 0.5 * accelerations * dt**2
 
-        # Step 2: Compute new accelerations
+        # new accels
         r_vec = particle_positions[1] - particle_positions[0]
         force = lennard_jones_force(r_vec)
         new_accelerations = np.array([-force / mass, force / mass])
 
-        # Step 3: Update velocities
+        # new vls
         particle_velocities += 0.5 * (accelerations + new_accelerations) * dt
 
-        # Step 4: Replace old accelerations
+        
         accelerations = new_accelerations
 
-    # Update plot
+    
     particle_plot[0].set_data(particle_positions[:, 0], particle_positions[:, 1])
     return particle_plot
 
 
 
 fig, ax = plt.subplots()
-ax.set_xlim(0, 10)
-ax.set_ylim(0, 10)
+ax.set_xlim(0, 15)
+ax.set_ylim(0, 15)
 ax.set_aspect('equal')
 ax.set_title("KLennardJonesPotential")
 
@@ -63,7 +63,7 @@ ax.set_title("KLennardJonesPotential")
 
 
 
-particle_plot = ax.plot(particle_positions[:, 0], particle_positions[:, 1], 'bo', markersize=10)
+particle_plot = ax.plot(particle_positions[:, 0], particle_positions[:, 1], 'go', markersize=25)
 
 ani = FuncAnimation(fig, update, frames=2000, interval=50, blit=True)
 
