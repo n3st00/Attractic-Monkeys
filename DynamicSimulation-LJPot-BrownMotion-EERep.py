@@ -15,11 +15,6 @@ boundary_radius = 3.5
 
 brownian_strength = 0.1  # try 0.1 to 0.5 range
 
-
-
-
-
-
 # --- Initialization ---
 electron_positions = []
 for _ in range(num_electrons):
