@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 from mpl_toolkits.mplot3d import Axes3D
 
+stop_animation = False
 #----- PARAMETERS --------------------------------------------------
 N = 30
 box_size = 4.0
@@ -11,10 +12,10 @@ sigma = 1.0
 dt = 0.001
 mass = 1.0
 
-MAX_FORCE = 100.0 
+MAX_FORCE = 300.0 
 
 wall_thickness = 0.6     
-wall_stiffness = 75.0    
+wall_stiffness = 125.0    
 #----- INITIAL STATE -----------------------------------------------
 positions = np.random.rand(N, 3) * box_size
 velocities = np.random.randn(N, 3) * 0.15
@@ -84,6 +85,10 @@ steps_per_frame = 15
 def update_plot(frame):
     global positions, velocities, accelerations
 
+    if stop_animation:
+        ani.event_source.stop()
+        return scat,
+    
     for _ in range(steps_per_frame):
         # --- Position update (Velocity Verlet step 1) ---
         positions += velocities * dt + 0.5 * accelerations * dt**2
@@ -99,8 +104,17 @@ def update_plot(frame):
     # --- Update scatter plot once per visual frame ---
     scat._offsets3d = (positions[:, 0], positions[:, 1], positions[:, 2])
     return scat,
+    
+
+def on_key_press(event):
+	global stop_animation
+	if event.key.lower() == "b":
+		stop_animation = True
+		print("Animation stopped")
 
 #----- RUN ANIMATION -----------------------------------------------
 ani = FuncAnimation(fig, update_plot, frames=500, interval=30, blit=False)
+fig.canvas.mpl_connect('key_press_event', on_key_press)
+
 plt.show()
 
