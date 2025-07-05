@@ -21,18 +21,19 @@ time_points = []
 
 #graphs
 def compute_energies():
-    # Kinetic Energy = 0.5 * m * v^2 for each particle
-    kinetic = 0.5 * mass * np.sum(np.linalg.norm(particle_velocities, axis=1)**2)
-
     # Potential Energy = LJ potential
     r_vec = particle_positions[1] - particle_positions[0]
     r = np.linalg.norm(r_vec)
+    r_min = 1.12  # minimum allowed distance to avoid spike
+
+    if r < r_min:
+        r = r_min
+
     if r == 0:
         potential = 0
     else:
-        potential = 4 * epsilon * ((sigma / r)**12 - (sigma / r)**6)
-
-    return kinetic, potential, kinetic + potential
+        potential = 4 * epsilon * ((sigma / r)**12 - (sigma / r)**>
+    return potential
 
 
 def lennard_jones_force(r_vec):
@@ -68,8 +69,8 @@ def update(frame):
 
         
         accelerations = new_accelerations
-        kin, pot, tot = compute_energies()
-        energies.append(tot)
+        pot = compute_energies()
+        energies.append(pot)
         time_points.append(frame + _ / steps_per_frame)
 
     
@@ -99,7 +100,7 @@ fig.canvas.mpl_connect('key_press_event', on_key_press) #stoppingp the animation
 
 ax_energy.set_xlim(0, 100) ## to calibrate
 ax_energy.set_ylim(-1, 1) 
-ax_energy.set_title("Total Energy Over Time")
+ax_energy.set_title("Potential Energy Over Time")
 energy_line, = ax_energy.plot([], [], "r-")
 
 
