@@ -2,6 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
+stop_animation = False
+
 #-----PARAMETERS--------------------------------------------------
 epsilon = 1.0
 sigma = 1.0
@@ -14,7 +16,23 @@ particle_velocities = np.array([[0.05, 0.0], [-0.1, 0.05]]) # set up the initial
 # Iiitial acceleration
 r_vec = particle_positions[1] - particle_positions[0]
 
+energies = []
+time_points = []
 
+#graphs
+def compute_energies():
+    # Kinetic Energy = 0.5 * m * v^2 for each particle
+    kinetic = 0.5 * mass * np.sum(np.linalg.norm(particle_velocities, axis=1)**2)
+
+    # Potential Energy = LJ potential
+    r_vec = particle_positions[1] - particle_positions[0]
+    r = np.linalg.norm(r_vec)
+    if r == 0:
+        potential = 0
+    else:
+        potential = 4 * epsilon * ((sigma / r)**12 - (sigma / r)**6)
+
+    return kinetic, potential, kinetic + potential
 
 
 def lennard_jones_force(r_vec):
@@ -32,6 +50,10 @@ steps_per_frame = 14  # calculating multiple steps at once
 def update(frame):
     global particle_positions, particle_velocities, accelerations
 
+    if stop_animation:
+        ani.event_source.stop()
+        return particle_plot
+
     for _ in range(steps_per_frame):
         # updating positions
         particle_positions += particle_velocities * dt + 0.5 * accelerations * dt**2
@@ -46,20 +68,39 @@ def update(frame):
 
         
         accelerations = new_accelerations
+        kin, pot, tot = compute_energies()
+        energies.append(tot)
+        time_points.append(frame + _ / steps_per_frame)
+
+    
+    energy_line.set_data(time_points, energies)
+    ax_energy.set_xlim(0, max(20, time_points[-1]))
+    ax_energy.set_ylim(min(energies) - 0.1, max(energies) + 0.1)
 
     
     particle_plot[0].set_data(particle_positions[:, 0], particle_positions[:, 1])
-    return particle_plot
+    return particle_plot + [energy_line]
 
 
 
-fig, ax = plt.subplots()
+def on_key_press(event):
+	global stop_animation
+	if event.key == 'c':
+		stop_animation = True
+	print("animation stopped")
+
+fig, (ax, ax_energy) = plt.subplots(2, 1, figsize=(6, 8)) # ENERGY GRAPHS
 ax.set_xlim(0, 15)
 ax.set_ylim(0, 15)
 ax.set_aspect('equal')
 ax.set_title("KLennardJonesPotential")
 
+fig.canvas.mpl_connect('key_press_event', on_key_press) #stoppingp the animation
 
+ax_energy.set_xlim(0, 100) ## to calibrate
+ax_energy.set_ylim(-1, 1) 
+ax_energy.set_title("Total Energy Over Time")
+energy_line, = ax_energy.plot([], [], "r-")
 
 
 
