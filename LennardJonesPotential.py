@@ -11,6 +11,11 @@ mass = 1.0
 #-----/PARAMETERS-------------------------------------------------
 particle_positions = np.array([[4.5, 5], [6, 5]], dtype=float)
 particle_velocities = np.array([[0.05, 0.0], [-0.05, 0.0]]) # set up the initial velocities
+# Iiitial acceleration
+r_vec = particle_positions[1] - particle_positions[0]
+
+
+
 
 def lennard_jones_force(r_vec):
 	r = np.linalg.norm(r_vec)
@@ -21,19 +26,31 @@ def lennard_jones_force(r_vec):
 	return factor * (r_vec / r)
 	
 	
+initial_force = lennard_jones_force(r_vec)	
+accelerations = np.array([-initial_force / mass, initial_force / mass])
 steps_per_frame = 7  # calculating multiple steps at once
 def update(frame):
-    global particle_positions, particle_velocities
+    global particle_positions, particle_velocities, accelerations
 
     for _ in range(steps_per_frame):
+        # Step 1: Update positions
+        particle_positions += particle_velocities * dt + 0.5 * accelerations * dt**2
+
+        # Step 2: Compute new accelerations
         r_vec = particle_positions[1] - particle_positions[0]
         force = lennard_jones_force(r_vec)
-        forces = np.array([-force, force])
-        particle_velocities += (forces / mass) * dt
-        particle_positions += particle_velocities * dt
+        new_accelerations = np.array([-force / mass, force / mass])
 
+        # Step 3: Update velocities
+        particle_velocities += 0.5 * (accelerations + new_accelerations) * dt
+
+        # Step 4: Replace old accelerations
+        accelerations = new_accelerations
+
+    # Update plot
     particle_plot[0].set_data(particle_positions[:, 0], particle_positions[:, 1])
     return particle_plot
+
 
 
 fig, ax = plt.subplots()
